@@ -4,7 +4,7 @@
 
 本目录包含可在 **Claude Code**（Cursor / Claude IDE）中使用的 MetaApp 开发与打包 Skills。通过 OpenSkills 安装后，可在对话中使用 `/skills` 查看并启用这些能力。
 
-## 如何在Claude Code中引入 MetaApp Skills
+## 如何在Claude Code中引入MetaApp Skills
 
 1. 在 IDE 终端中执行：
    ```bash
@@ -16,7 +16,7 @@
    ```
    即可看到刚拉取的 MetaApp Skills，并可按需启用。
 
-## 如何在Cursor，Codex等其他Agent平台中中引入 MetaApp Skills
+## 如何在Cursor，Codex等其他Agent平台中引入MetaApp Skills
 
 1. 在 IDE 终端中执行：
    ```bash
