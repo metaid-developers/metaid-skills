@@ -240,7 +240,7 @@ These are shared resources that can be used across multiple MetaApp projects. As
 
 **Future**: This skill will be published to a public GitHub repository. Users can update shared resources via:
 ```bash
-npx openskills install metaid-developers/metaapp-skills-claude
+npx openskills install metaid-developers/metaapp-skills
 ```
 
 ## Common Patterns

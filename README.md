@@ -2,17 +2,29 @@
 
 本目录包含可在 **Claude Code**（Cursor / Claude IDE）中使用的 MetaApp 开发与打包 Skills。通过 OpenSkills 安装后，可在对话中使用 `/skills` 查看并启用这些能力。
 
-## 如何引入 MetaApp Skills
+## 如何在Claude Code中引入 MetaApp Skills
 
 1. 在 IDE 终端中执行：
    ```bash
-   npx openskills install metaid-developers/metaapp-skills-claude
+   npx openskills install metaid-developers/metaapp-skills
    ```
 2. 启动 Claude，在对话框中输入：
    ```
    /skills
    ```
    即可看到刚拉取的 MetaApp Skills，并可按需启用。
+
+## 如何在Cursor，Codex等其他Agent平台中中引入 MetaApp Skills
+
+1. 在 IDE 终端中执行：
+   ```bash
+   npx openskills install metaid-developers/metaapp-skills
+   ```
+2. 拉取MetaApp Skills仓库成功后会在项目目录中看到.claude/skills这样的文件目录结果，需要注意的是在非Claude终端中使用MetaApp Skills时，需要修改一下文件名称，把.claude/skills 改成 .codex/skills即可，其他不变
+
+3. 在 Agent 对话中让助手列举当前可用的 skills，例如：
+   - 「列举一下当前可用的 skills」
+   - 「当前项目有哪些可用的 skills？」
 
 ## 如何更新 MetaApp Skills
 
