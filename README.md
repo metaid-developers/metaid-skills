@@ -41,5 +41,5 @@ npx openskills update
 
 - **metaapp-develop**：基于 IDFramework 架构开发完整 MetaApp 前端项目（模板、组件、命令、开发指南）。
 - **metaapp-builder**：将已完成的 MetaApp 前端项目打包为可发布的 zip 压缩包。
-
+- **MetaID-Agent**: 用于创建MetaID Agent,集成钱包创建，生成MetaID账户,发送交易等功能(持续更新中)。
 详细说明与触发方式见各 Skill 目录下的 `SKILL.md`。
