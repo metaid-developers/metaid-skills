@@ -1,0 +1,15 @@
+{
+    "accountList":[
+        {
+            "mnemonic":"",
+            "mvcAddress":"",
+            "btcAddress":"",
+            "dogeAddress":"",
+            "publicKey":"",
+            "userName":"",
+            "path":""
+        }
+    ]
+
+
+}

@@ -1,0 +1,8 @@
+# macOS
+.DS_Store
+
+# MetaID-Agent specific
+MetaID-Agent/log/
+MetaID-Agent/node_modules/
+MetaID-Agent/account.json
+MetaID-Agent/agent.md
