@@ -77,12 +77,45 @@ const result = await createPin(params, mnemonic)
 // Returns: { txids: string[], totalCost: number }
 ```
 
-### 4. Update Account
+### 4. Fetch User Info and Get globalMetaId
 
-After successful registration, update the account with the username:
+After successful MetaID node creation, fetch user information by address to get the globalMetaId:
+
+```typescript
+import { getUserInfoByAddressByMs } from './api'
+
+// Fetch user info by address
+const userInfo = await getUserInfoByAddressByMs(mvcAddress)
+
+if (userInfo && userInfo.globalMetaId) {
+  // Update account with username and globalMetaId
+  account.userName = username
+  account.globalMetaId = userInfo.globalMetaId
+  writeAccountFile(accountData)
+}
+```
+
+The `getUserInfoByAddressByMs()` function calls the MetaID service API (`https://file.metaid.io/metafile-indexer/api/v1/users/address/{address}`) to retrieve user information including:
+- `address`: User's address
+- `avatar`: Avatar information
+- `avatarPinId`: Avatar PIN ID
+- `chatPublicKey`: Chat public key
+- `chatPublicKeyId`: Chat public key ID
+- `metaId`: MetaID
+- `globalMetaId`: Global MetaID (supports multiple chains: MVC/BTC/DOGE)
+- `name`: Username
+- `namePinId`: Name PIN ID
+- `chainName`: Chain name
+
+### 5. Update Account
+
+After successful registration and fetching user info, update the account with the username and globalMetaId:
 
 ```typescript
 account.userName = username
+if (userInfo && userInfo.globalMetaId) {
+  account.globalMetaId = userInfo.globalMetaId
+}
 writeAccountFile(accountData)
 ```
 

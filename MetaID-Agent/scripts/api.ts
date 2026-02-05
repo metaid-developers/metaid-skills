@@ -374,3 +374,142 @@ export async function broadcastDogeTx(rawTx: string): Promise<string> {
 
   return data.TxId
 }
+
+/**
+ * HttpRequest class for making HTTP requests using fetch
+ */
+export class HttpRequest {
+  private baseUrl: string
+  private options: any
+
+  constructor(baseUrl: string, options: any = {}) {
+    this.baseUrl = baseUrl
+    this.options = options
+  }
+
+  private async makeRequest(
+    method: string,
+    url: string,
+    data?: any,
+    headers?: Record<string, string>
+  ): Promise<any> {
+    const fullUrl = url.startsWith('http') ? url : `${this.baseUrl}${url}`
+    
+    const requestHeaders = new Headers({
+      'Content-Type': 'application/json',
+      ...headers,
+    })
+
+    const requestOptions: RequestInit = {
+      method,
+      headers: requestHeaders,
+    }
+
+    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+      requestOptions.body = JSON.stringify(data)
+    }
+
+    try {
+      const response = await fetch(fullUrl, requestOptions)
+      
+      // Handle response
+      if (this.options.responseHandler) {
+        // Parse JSON first, then pass to handler
+        const data = await response.json()
+        return await this.options.responseHandler({ ...response, data })
+      }
+
+      // Default response handling
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      return await response.json()
+    } catch (error) {
+      // Handle error
+      if (this.options.errorHandler) {
+        return await this.options.errorHandler(error)
+      }
+      throw error
+    }
+  }
+
+  get(url: string, headers?: Record<string, string>): Promise<any> {
+    return this.makeRequest('GET', url, undefined, headers)
+  }
+
+  post(url: string, data?: any, headers?: Record<string, string>): Promise<any> {
+    return this.makeRequest('POST', url, data, headers)
+  }
+
+  put(url: string, data?: any, headers?: Record<string, string>): Promise<any> {
+    return this.makeRequest('PUT', url, data, headers)
+  }
+
+  delete(url: string, headers?: Record<string, string>): Promise<any> {
+    return this.makeRequest('DELETE', url, undefined, headers)
+  }
+}
+
+/**
+ * UserInfo interface for MetaID user information
+ */
+export interface UserInfo {
+  address: string
+  avatar: string
+  avatarPinId: string
+  chatPublicKey: string
+  chatPublicKeyId: string
+  metaId: string
+  globalMetaId?: string // 全局 MetaId，支持多链（MVC/BTC/DOGE）
+  name: string
+  namePinId: string
+  chainName: string
+}
+
+// Create metafs API instance
+const metafsApiInstance = new HttpRequest(
+  'https://file.metaid.io/metafile-indexer/api',
+  {
+    // 自定义响应处理器（适配 MAN API 的响应格式）
+    responseHandler: (response: any) => {
+      return new Promise((resolve, reject) => {
+        const { data } = response
+        
+        // MAN API 响应格式：{ code: 1, data: {...}, message: '...' }
+        if (data && typeof data.code === 'number') {
+          if (data.code === 0) {
+            // 成功：返回 data 字段
+            resolve(data.data)
+          } else {
+            // 失败：返回错误信息
+            reject({
+              code: data.code,
+              message: data.message || '请求失败',
+            })
+          }
+        } else {
+          // 兼容其他格式，直接返回 data
+          resolve(data.data || data)
+        }
+      })
+    },
+  }
+)
+
+// 导出 API 实例（保持原有的使用方式）
+const metafsApi = {
+  get: metafsApiInstance.get.bind(metafsApiInstance),
+  post: metafsApiInstance.post.bind(metafsApiInstance),
+  put: metafsApiInstance.put.bind(metafsApiInstance),
+  delete: metafsApiInstance.delete.bind(metafsApiInstance),
+}
+
+/**
+ * Get user info by address from MetaID service
+ */
+export const getUserInfoByAddressByMs = async (address: string): Promise<UserInfo> => {
+  return metafsApi.get(`/v1/users/address/${address}`).then(res => {
+    return res
+  })
+}

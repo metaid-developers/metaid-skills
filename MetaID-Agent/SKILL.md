@@ -80,7 +80,8 @@ The script will:
 4. Create/select wallet and save to account.json
 5. Register MetaID if userName is empty
 6. Create MetaID node with username
-7. Send Buzz message if content is provided
+7. Fetch user info by address to get globalMetaId and update account.json
+8. Send Buzz message if content is provided
 
 ## Account Management
 
@@ -96,7 +97,8 @@ Account data is stored in `account.json` at the skill root directory with the fo
       "dogeAddress": "DOGE address",
       "publicKey": "hex public key",
       "userName": "username or empty string",
-      "path": "m/44'/10001'/0'/0/0"
+      "path": "m/44'/10001'/0'/0/0",
+      "globalMetaId": "global metaid (optional, fetched after MetaID registration)"
     }
   ]
 }
@@ -105,6 +107,7 @@ Account data is stored in `account.json` at the skill root directory with the fo
 **Important Note**: 
 - Empty accounts (accounts with empty mnemonic) are automatically filtered out when writing to `account.json`. The system will not save accounts that have not been properly initialized.
 - When creating a new `account.json` file, it will be initialized with an empty `accountList` array. The template file `template/demo-account.json` contains an example structure, but empty account entries should not be written to the actual `account.json` file.
+- After MetaID registration is completed, the system will automatically fetch user information by address using `getUserInfoByAddressByMs()` API to retrieve the `globalMetaId` (global MetaID supporting multiple chains: MVC/BTC/DOGE) and save it to the account record in `account.json`.
 
 ## Error Handling
 

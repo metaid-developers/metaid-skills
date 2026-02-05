@@ -9,6 +9,7 @@ export interface Account {
   publicKey: string
   userName: string
   path: string
+  globalMetaId?: string // 全局 MetaId，支持多链（MVC/BTC/DOGE）
 }
 
 export interface AccountData {

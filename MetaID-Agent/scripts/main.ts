@@ -2,7 +2,7 @@
 
 import * as path from 'path'
 import { generateMnemonic, getAllAddress, getPublicKey, getPath, getUtxos, getCredential } from './wallet'
-import { getMVCRewards, getMVCInitRewards, sleep } from './api'
+import { getMVCRewards, getMVCInitRewards, sleep, getUserInfoByAddressByMs } from './api'
 import { createPin, CreatePinParams } from './metaid'
 import { createBuzz } from './buzz'
 import {
@@ -140,14 +140,47 @@ async function main() {
       if (namePinRes.txids && namePinRes.txids.length > 0) {
         console.log('✅ MetaID node created successfully')
         
-        // Update account with username
-        const accountIndex = accountData.accountList.findIndex(
-          acc => acc.mvcAddress === currentAccount!.mvcAddress
-        )
-        if (accountIndex >= 0) {
-          accountData.accountList[accountIndex].userName = username
-          writeAccountFile(accountData)
-          currentAccount.userName = username
+        // Get user info by address to retrieve globalMetaId
+        console.log('📋 Fetching user info to get globalMetaId...')
+        try {
+          const userInfo = await getUserInfoByAddressByMs(currentAccount.mvcAddress)
+          if (userInfo && userInfo.globalMetaId) {
+            console.log(`✅ Retrieved globalMetaId: ${userInfo.globalMetaId}`)
+            
+            // Update account with username and globalMetaId
+            const accountIndex = accountData.accountList.findIndex(
+              acc => acc.mvcAddress === currentAccount!.mvcAddress
+            )
+            if (accountIndex >= 0) {
+              accountData.accountList[accountIndex].userName = username
+              accountData.accountList[accountIndex].globalMetaId = userInfo.globalMetaId
+              writeAccountFile(accountData)
+              currentAccount.userName = username
+              currentAccount.globalMetaId = userInfo.globalMetaId
+            }
+          } else {
+            // Update account with username only if globalMetaId is not available
+            const accountIndex = accountData.accountList.findIndex(
+              acc => acc.mvcAddress === currentAccount!.mvcAddress
+            )
+            if (accountIndex >= 0) {
+              accountData.accountList[accountIndex].userName = username
+              writeAccountFile(accountData)
+              currentAccount.userName = username
+            }
+            console.log('⚠️  globalMetaId not found in user info')
+          }
+        } catch (error: any) {
+          console.log(`⚠️  Failed to fetch user info: ${error.message}`)
+          // Continue with username update even if user info fetch fails
+          const accountIndex = accountData.accountList.findIndex(
+            acc => acc.mvcAddress === currentAccount!.mvcAddress
+          )
+          if (accountIndex >= 0) {
+            accountData.accountList[accountIndex].userName = username
+            writeAccountFile(accountData)
+            currentAccount.userName = username
+          }
         }
       } else {
         throw new Error('Failed to create MetaID node: no txids returned')
