@@ -257,6 +257,92 @@
           }
         }
       }
+    },
+    {
+      "name": "falkordb_user_node",
+      "description": "根据 metaID 查询 User 节点（仅节点本身，不包含关联 Content/PIN）。",
+      "method": "GET",
+      "path": "/falkordb/users/{metaID}",
+      "request": {
+        "pathParameters": [{ "name": "metaID", "type": "string", "required": true, "description": "用户 MetaID" }],
+        "queryParameters": []
+      },
+      "response": {
+        "success": {
+          "code": { "type": "integer", "description": "状态码，0 表示成功" },
+          "message": { "type": "string", "description": "提示信息" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": { "type": "object", "description": "User 节点（仅节点本身）", "additionalProperties": true }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "falkordb_user_pin_ids",
+      "description": "分页查询该用户发布的 Pin ID 列表，返回总数与当前页。",
+      "method": "GET",
+      "path": "/falkordb/users/{metaID}/pins",
+      "request": {
+        "pathParameters": [{ "name": "metaID", "type": "string", "required": true, "description": "用户 MetaID" }],
+        "queryParameters": [
+          { "name": "offset", "type": "integer", "required": false, "description": "偏移，默认 0" },
+          { "name": "limit", "type": "integer", "required": false, "description": "每页条数，默认 20，最大 1000" }
+        ]
+      },
+      "response": {
+        "success": {
+          "code": { "type": "integer", "description": "状态码，0 表示成功" },
+          "message": { "type": "string", "description": "提示信息" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "metaID": { "type": "string", "description": "用户 MetaID" },
+              "total": { "type": "integer", "description": "该用户 Pin 总数" },
+              "pinIDs": { "type": "array", "description": "当前页 pinID 列表", "items": { "type": "string" } },
+              "offset": { "type": "integer", "description": "本次偏移" },
+              "limit": { "type": "integer", "description": "本次每页条数" },
+              "count": { "type": "integer", "description": "当前页条数" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "falkordb_content_node",
+      "description": "根据 pinID 查询 Content 节点及其关联的 User 和 PIN。",
+      "method": "GET",
+      "path": "/falkordb/contents/{pinID}",
+      "request": {
+        "pathParameters": [{ "name": "pinID", "type": "string", "required": true, "description": "PinID" }],
+        "queryParameters": []
+      },
+      "response": {
+        "success": {
+          "code": { "type": "integer", "description": "状态码，0 表示成功" },
+          "message": { "type": "string", "description": "提示信息" },
+          "data": { "type": "object", "description": "Content 节点及关联 users、pins", "additionalProperties": true }
+        }
+      }
+    },
+    {
+      "name": "falkordb_pin_node",
+      "description": "根据 pinID 查询 PIN 节点及其关联的 User 和 Content。",
+      "method": "GET",
+      "path": "/falkordb/pins/{pinID}",
+      "request": {
+        "pathParameters": [{ "name": "pinID", "type": "string", "required": true, "description": "PinID" }],
+        "queryParameters": []
+      },
+      "response": {
+        "success": {
+          "code": { "type": "integer", "description": "状态码，0 表示成功" },
+          "message": { "type": "string", "description": "提示信息" },
+          "data": { "type": "object", "description": "PIN 节点及关联 users、contents", "additionalProperties": true }
+        }
+      }
     }
   ]
 }

@@ -66,6 +66,54 @@ Base URL：`https://www.metaweb.world/world-base/api/v1`（可通过环境变量
 
 ---
 
+## 6. falkordb_user_node
+
+根据 metaID 查询 User 节点（仅节点本身，不包含关联 Content/PIN）。
+
+- **Method**: GET
+- **Path**: `/falkordb/users/{metaID}`
+- **Path 参数**: `metaID`（必填，string）
+- **Query 参数**: 无
+- **返回**: `data.user`（User 节点本身）
+
+---
+
+## 7. falkordb_user_pin_ids
+
+分页查询该用户发布的 Pin ID 列表，返回总数与当前页。
+
+- **Method**: GET
+- **Path**: `/falkordb/users/{metaID}/pins`
+- **Path 参数**: `metaID`（必填，string）
+- **Query 参数**: `offset`（可选，默认 0）、`limit`（可选，默认 20，最大 1000）
+- **返回**: `data.metaID`、`data.total`、`data.pinIDs`、`data.offset`、`data.limit`、`data.count`
+
+---
+
+## 8. falkordb_content_node
+
+根据 pinID 查询 Content 节点及其关联的 User 和 PIN。
+
+- **Method**: GET
+- **Path**: `/falkordb/contents/{pinID}`
+- **Path 参数**: `pinID`（必填，string）
+- **Query 参数**: 无
+- **返回**: `data`（Content 节点及关联 users、pins）
+
+---
+
+## 9. falkordb_pin_node
+
+根据 pinID 查询 PIN 节点及其关联的 User 和 Content。
+
+- **Method**: GET
+- **Path**: `/falkordb/pins/{pinID}`
+- **Path 参数**: `pinID`（必填，string）
+- **Query 参数**: 无
+- **返回**: `data`（PIN 节点及关联 users、contents）
+
+---
+
 ## PinWithContent 结构（简要）
 
 每条列表项包含：`pinID`、`path`、`pin`（PIN 节点：pinID、path、firstPath、timestamp、operation、contentType、chainName、txID、blockHeight、creatorAddress、ownerAddress、extra 等）、`content`（Content 节点，可为空：pinID、path、content、contentHash、jsonFields、contentType、timestamp 等）。

@@ -1,13 +1,13 @@
 ---
 name: metaid-agent-world
-description: 查询指定 metaID 在链上的动作（发过的 pin、按 path/时间/群/被指向 等）。当需要（1）按 path 或协议查用户 pin、（2）按时间窗口查用户近期 pin、（3）查用户在某一群内的消息、（4）查「指向该用户」的 pin、（5）想知道现在有什么协议时用 pins_by_path_paged 脚本且 path 为 /protocols/metaprotocol 时使用本技能；优先通过 scripts 下五个 Python 脚本调用接口（pins_by_path.py、pins_by_path_paged.py、pins_in_window.py、group_messages.py、pins_pointing.py），完整 API 定义见本技能 references/mcp-falkordb-pin-query.json。
+description: 查询指定 metaID 在链上的动作（发过的 pin、按 path/时间/群/被指向 等）。当需要（1）按 path 或协议查用户 pin、（2）按时间窗口查用户近期 pin、（3）查用户在某一群内的消息、（4）查「指向该用户」的 pin、（5）想知道现在有什么协议时用 pins_by_path_paged 且 path 为 /protocols/metaprotocol、（6）查某 metaID 的 User 节点（仅节点本身）、（7）分页查该用户 pinID 列表（含总数）、（8）按 pinID 查 Content 或 PIN 节点时使用本技能；优先通过 scripts 下 Python 脚本调用接口（pins_by_path、pins_by_path_paged、pins_in_window、group_messages、pins_pointing、user_node、user_pins、content_node、pin_node），完整 API 定义见 references/mcp-falkordb-pin-query.json。
 ---
 
 # MetaID Agent World
 
 ## Overview
 
-本技能用于根据用户需求查询某个 metaID 在链上的动作，通过执行 **scripts** 下五个脚本之一发起请求。返回为 pin 列表（及可选 content），每项为强类型 PinWithContent（pinID, path, pin, content）。Base URL 可通过环境变量 `METAID_WORLD_BASE_URL` 覆盖，未设置时默认为 `https://www.metaweb.world/world-base/api/v1`。
+本技能用于根据用户需求查询某个 metaID 在链上的动作，通过执行 **scripts** 下脚本发起请求。返回多为 pin 列表（及可选 content），每项为强类型 PinWithContent；另有 User/Pin/Content 节点查询（user_node、user_pins、content_node、pin_node）。Base URL 可通过环境变量 `METAID_WORLD_BASE_URL` 覆盖，未设置时默认为 `https://www.metaweb.world/world-base/api/v1`。
 
 ## 如何选脚本
 
@@ -18,6 +18,10 @@ description: 查询指定 metaID 在链上的动作（发过的 pin、按 path/�
 | 按时间窗口查该用户发出的 pin（最近 N 小时/分钟） | `scripts/pins_in_window.py` | 仅需 metaID + 可选 hours 或 minutes；不传则服务端默认 24 小时，最多 1000 条 |
 | 查该用户在某个群里的消息 | `scripts/group_messages.py` | 必填 metaID、groupID；可选 hours/minutes、limit（默认 50，最大 1000） |
 | 查「指向该用户」的 pin（如被@、被回复） | `scripts/pins_pointing.py` | metaID 为被指向者；可选 hours/minutes、limit（默认 100，最大 1000） |
+| 查 User 节点（仅节点本身） | `scripts/user_node.py` | 仅需 metaID；返回 data.user |
+| 分页查该用户 pinID 列表（含总数） | `scripts/user_pins.py` | 必填 metaID；可选 offset、limit（默认 0、20，最大 1000）；返回 data.total、data.pinIDs、data.count |
+| 按 pinID 查 Content 节点 | `scripts/content_node.py` | 必填 pinID；返回 data（Content 及关联） |
+| 按 pinID 查 PIN 节点 | `scripts/pin_node.py` | 必填 pinID；返回 data（PIN 及关联） |
 
 ## 语义与 path 对应
 
@@ -37,6 +41,10 @@ description: 查询指定 metaID 在链上的动作（发过的 pin、按 path/�
 - **pins_in_window.py**：`python scripts/pins_in_window.py --metaID <metaID> [--hours 24]` 或 `[--minutes 60]`
 - **group_messages.py**：`python scripts/group_messages.py --metaID <metaID> --groupID <groupID> [--hours 24] [--limit 50]`
 - **pins_pointing.py**：`python scripts/pins_pointing.py --metaID <metaID> [--hours 24] [--limit 100]`
+- **user_node.py**：`python scripts/user_node.py --metaID <metaID>`
+- **user_pins.py**：`python scripts/user_pins.py --metaID <metaID> [--offset 0] [--limit 20]`
+- **content_node.py**：`python scripts/content_node.py --pinID <pinID>`
+- **pin_node.py**：`python scripts/pin_node.py --pinID <pinID>`
 
 脚本成功时向 stdout 输出 JSON 响应；失败时向 stderr 输出错误并 exit 1。
 
@@ -47,10 +55,14 @@ description: 查询指定 metaID 在链上的动作（发过的 pin、按 path/�
 - **pins_in_window.py**：`--metaID` 必填；`--hours` 与 `--minutes` 可选（二选一）。返回在 `data.pins`，每条 content 可能为空。
 - **group_messages.py**：`--metaID`、`--groupID` 必填；`--limit` 默认 50。返回在 `data.messages`。
 - **pins_pointing.py**：`--metaID` 必填；`--limit` 默认 100。返回在 `data.pins`。
+- **user_node.py**：`--metaID` 必填。返回在 `data.user`（仅 User 节点本身）。
+- **user_pins.py**：`--metaID` 必填；`--offset` 默认 0；`--limit` 默认 20，最大 1000。返回在 `data.pinIDs`、`data.total`、`data.offset`、`data.limit`、`data.count`。
+- **content_node.py**：`--pinID` 必填。返回在 `data`（Content 节点及关联）。
+- **pin_node.py**：`--pinID` 必填。返回在 `data`（PIN 节点及关联）。
 
 所有列表项均为 **PinWithContent**：顶层含 `pinID`、`path`；`pin` 为 PIN 节点强类型（含 timestamp、operation、contentType、chainName 等）；`content` 为 Content 节点强类型（可为空），含 content、contentHash、jsonFields 等。
 
 ## Resources
 
-- 优先通过 **scripts** 下五个 Python 脚本调用接口；完整请求/响应 schema 见 [references/mcp-falkordb-pin-query.json](references/mcp-falkordb-pin-query.json)。
+- 优先通过 **scripts** 下 Python 脚本调用接口；完整请求/响应 schema 见 [references/mcp-falkordb-pin-query.json](references/mcp-falkordb-pin-query.json)。
 - 接口路径与参数速查见 [references/mcp-falkordb-pin-tools.md](references/mcp-falkordb-pin-tools.md)。
