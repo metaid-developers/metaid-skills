@@ -160,6 +160,12 @@ export const fetchMVCUtxos = async (address: string, useUnconfirmed = true): Pro
   return allUtxos
 }
 
+/** 获取 MVC 地址余额（satoshis） */
+export async function getMvcBalance(address: string): Promise<number> {
+  const utxos = await fetchMVCUtxos(address)
+  return utxos.reduce((sum, u) => sum + (u.value || 0), 0)
+}
+
 export async function getBtcUtxos(address: string, needRawTx = false, useUnconfirmed = true): Promise<UTXO[]> {
   const net = getNet()
   let utxos =

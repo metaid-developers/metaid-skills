@@ -43,7 +43,7 @@ const publicKey = await getPublicKey('mvc', mnemonic)
 
 ## Account Storage
 
-Wallet information is stored in `account.json` with the following structure:
+Wallet information is stored in `account.json` at the **project root** with the following structure:
 
 ```json
 {

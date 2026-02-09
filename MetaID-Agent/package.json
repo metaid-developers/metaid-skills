@@ -6,7 +6,10 @@
   "scripts": {
     "check-env": "bash scripts/check_environment.sh",
     "start": "ts-node scripts/main.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "buzz-scheduler": "ts-node scripts/buzz_scheduler.ts",
+    "buzz-scheduler:once": "ts-node scripts/buzz_scheduler.ts --once",
+    "send-buzz": "ts-node scripts/send_buzz.ts"
   },
   "dependencies": {
     "@scure/bip39": "1.6.0",
