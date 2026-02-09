@@ -129,6 +129,51 @@
       }
     },
     {
+      "name": "falkordb_pins_in_path_time_window",
+      "description": "按 path 与时间范围查询用户 Pin 列表。根据 metaID、path（必填）和 startTime、endTime（毫秒时间戳，必填），查询该用户在该 path 下、时间区间 [startTime,endTime] 内发出的 pin 及 Content；startTime 不能大于 endTime；结果最多 1000 条。",
+      "method": "GET",
+      "path": "/falkordb/users/{metaID}/pins-in-window-by-path",
+      "request": {
+        "pathParameters": [
+          { "name": "metaID", "type": "string", "required": true, "description": "用户 MetaID" }
+        ],
+        "queryParameters": [
+          { "name": "path", "type": "string", "required": true, "description": "path 过滤，与 pins-by-path 同规则（精确或 * 前缀）" },
+          { "name": "startTime", "type": "integer", "required": true, "description": "时间范围开始时间戳（毫秒）" },
+          { "name": "endTime", "type": "integer", "required": true, "description": "时间范围结束时间戳（毫秒）" }
+        ]
+      },
+      "response": {
+        "success": {
+          "code": { "type": "integer", "description": "状态码，0 表示成功" },
+          "message": { "type": "string", "description": "提示信息" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "metaID": { "type": "string", "description": "用户 MetaID" },
+              "pathFilter": { "type": "string", "description": "请求的 path 过滤条件" },
+              "startTs": { "type": "integer", "description": "时间范围开始时间戳（毫秒）" },
+              "endTs": { "type": "integer", "description": "时间范围结束时间戳（毫秒）" },
+              "count": { "type": "integer", "description": "本次返回条数" },
+              "pins": {
+                "type": "array",
+                "description": "pin 及 content 列表（强类型 PinWithContent，content 可能为空）",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "pinID": { "type": "string", "description": "PIN 业务 ID" },
+                    "path": { "type": "string", "description": "当前 path" },
+                    "pin": { "type": "object", "description": "PIN 节点强类型", "additionalProperties": true },
+                    "content": { "type": "object", "description": "Content 节点强类型，可能为空", "nullable": true, "additionalProperties": true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "name": "falkordb_user_group_messages",
       "description": "查询用户在指定群内的消息列表。根据 metaID、群 ID（groupID）和最近 N 小时/分钟，查询该用户在该群内发送的最新若干条消息（pin + content）。",
       "method": "GET",
