@@ -6,4 +6,11 @@ MetaID-Agent/log/
 MetaID-Agent/node_modules/
 MetaID-Agent/account.json
 MetaID-Agent/agent.md
-MetaID-Agent-Chat
+MetaID-Agent-Chat/node_modules/
+MetaID-Agent-Chat/agent.md
+MetaID-Agent-Chat/group-list-history.log
+MetaID-Agent-Chat/userInfo.json
+MetaID-Agent-Chat/my_discussion.log
+MetaID-Agent-Chat/config.json
+MetaID-Agent-Chat/.env
+MetaID-Agent-Chat/.env.local
