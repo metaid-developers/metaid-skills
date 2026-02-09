@@ -10,7 +10,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-const ROOT_DIR = path.join(__dirname, '..')
+// 根目录（MetaApp-Skill），与 account.json 同级
+const ROOT_DIR = path.join(__dirname, '..', '..')
 const ENV_FILE = path.join(ROOT_DIR, '.env')
 const ENV_LOCAL_FILE = path.join(ROOT_DIR, '.env.local')
 const ENV_EXAMPLE_FILE = path.join(ROOT_DIR, '.env.example')
@@ -61,7 +62,11 @@ function parseEnvFile(filePath: string): Record<string, string> {
 function loadEnv(): Record<string, string> {
   const env = parseEnvFile(ENV_FILE)
   const local = parseEnvFile(ENV_LOCAL_FILE)
-  return { ...env, ...local, ...process.env }
+  const proc: Record<string, string> = {}
+  for (const [k, v] of Object.entries(process.env)) {
+    if (v !== undefined) proc[k] = v
+  }
+  return { ...env, ...local, ...proc }
 }
 
 /**
@@ -151,12 +156,20 @@ function createConfigFromEnv(env: Record<string, string>): void {
 
 /**
  * 校验必填字段，缺失时打印提示并退出
- * GROUP_ID 必填；LLM API Key 在使用 LLM 的脚本中单独校验
+ * GROUP_ID 必填（可从 .env 或已迁移的 config.json 获取）；LLM API Key 在使用 LLM 的脚本中单独校验
  */
 function validateAndExit(env: Record<string, string>): void {
   const errors: string[] = []
 
-  const groupId = env.GROUP_ID || ''
+  let groupId = env.GROUP_ID || ''
+  if ((!groupId || groupId === 'your-group-id') && fs.existsSync(CONFIG_FILE)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
+      groupId = cfg.groupId || ''
+    } catch {
+      /* ignore */
+    }
+  }
   if (!groupId || groupId === 'your-group-id') {
     errors.push('GROUP_ID: 群聊 ID 不能为空，请在 .env 或 .env.local 中填写')
   }
@@ -170,22 +183,55 @@ function validateAndExit(env: Record<string, string>): void {
   }
 }
 
+/** 旧路径：MetaID-Agent-Chat 目录下 */
+const OLD_METAID_CHAT_DIR = path.join(__dirname, '..')
+const OLD_ENV_FILE = path.join(OLD_METAID_CHAT_DIR, '.env')
+const OLD_ENV_LOCAL_FILE = path.join(OLD_METAID_CHAT_DIR, '.env.local')
+const OLD_CONFIG_FILE = path.join(OLD_METAID_CHAT_DIR, 'config.json')
+const OLD_USER_INFO_FILE = path.join(OLD_METAID_CHAT_DIR, 'userInfo.json')
+const OLD_ENV_EXAMPLE_FILE = path.join(OLD_METAID_CHAT_DIR, '.env.example')
+
+/**
+ * 迁移：若旧位置存在且根目录不存在，则复制到根目录
+ */
+function migrateFromOldLocations(): void {
+  const pairs: [string, string][] = [
+    [OLD_ENV_FILE, ENV_FILE],
+    [OLD_ENV_LOCAL_FILE, ENV_LOCAL_FILE],
+    [OLD_CONFIG_FILE, CONFIG_FILE],
+    [OLD_USER_INFO_FILE, USER_INFO_FILE],
+    [OLD_ENV_EXAMPLE_FILE, ENV_EXAMPLE_FILE],
+  ]
+  for (const [oldPath, newPath] of pairs) {
+    if (fs.existsSync(oldPath) && !fs.existsSync(newPath)) {
+      try {
+        fs.copyFileSync(oldPath, newPath)
+        console.log(`📦 已迁移: ${path.basename(oldPath)} → 根目录`)
+      } catch (e) {
+        console.warn(`⚠️ 迁移失败 ${oldPath}:`, (e as Error).message)
+      }
+    }
+  }
+}
+
 /**
  * 确保所有必要文件存在，缺失时自动创建
  * 若 .env 和 .env.local 均不存在，创建 .env.example 并提示用户
  * @returns 是否通过了校验（未通过会 process.exit）
  */
 export function ensureConfigFiles(): void {
+  migrateFromOldLocations()
+
   const envExists = fs.existsSync(ENV_FILE)
   const envLocalExists = fs.existsSync(ENV_LOCAL_FILE)
 
   if (!envExists && !envLocalExists) {
     createEnvExample()
-    console.error('\n❌ 未找到 .env 或 .env.local 文件')
-    console.error('   已自动创建 .env.example，请复制为 .env 或 .env.local 后填写配置：')
+    console.error('\n❌ 未找到 .env 或 .env.local 文件（根目录）')
+    console.error('   已自动创建根目录 .env.example，请复制为 .env 或 .env.local 后填写配置：')
     console.error('   cp .env.example .env')
     console.error('\n   必填项：GROUP_ID、LLM_API_KEY（或 DEEPSEEK_API_KEY 等）')
-    console.error('   参考: MetaID-Agent-Chat/SKILL.md\n')
+    console.error('   参考: MetaID-Agent-Chat/SKILL.md（配置文件位于项目根目录）\n')
     process.exit(1)
   }
 
@@ -193,12 +239,12 @@ export function ensureConfigFiles(): void {
 
   if (!fs.existsSync(USER_INFO_FILE)) {
     createUserInfoTemplate()
-    console.log('📄 已自动创建 userInfo.json 模板，请根据 MetaID-Agent 的 account.json 填写 userList')
+    console.log('📄 已自动创建 userInfo.json 模板（根目录），请根据 account.json 填写 userList')
   }
 
   if (!fs.existsSync(CONFIG_FILE)) {
     createConfigFromEnv(env)
-    console.log('📄 已从 .env 创建 config.json')
+    console.log('📄 已从 .env 创建 config.json（根目录）')
   }
 
   validateAndExit(env)

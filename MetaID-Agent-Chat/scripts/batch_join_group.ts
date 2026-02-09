@@ -38,9 +38,9 @@ interface Account {
 }
 
 function getKnownAccounts(): Account[] {
-  const accountFile = path.join(__dirname, '..', '..', 'MetaID-Agent', 'account.json')
+  const accountFile = path.join(__dirname, '..', '..', 'account.json')
   if (!fs.existsSync(accountFile)) {
-    throw new Error('MetaID-Agent account.json not found')
+    throw new Error('根目录 account.json 未找到，请先通过 MetaID-Agent 创建 Agent')
   }
   const data = JSON.parse(fs.readFileSync(accountFile, 'utf-8'))
   return (data.accountList || [])

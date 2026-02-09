@@ -43,7 +43,7 @@ npm install @scure/bip39@1.6.0 @metalet/utxo-wallet-service@0.3.33-beta.5 bitcoi
 
 The MetaID-Agent workflow consists of three main phases:
 
-1. **Wallet Creation** - Generate mnemonic, derive addresses, save to account.json
+1. **Wallet Creation** - Generate mnemonic, derive addresses, save to `account.json` (project root)
 2. **MetaID Registration** - Claim gas subsidy, create MetaID node with username
 3. **Buzz Creation** - Send initial Buzz message to the network
 
@@ -62,7 +62,7 @@ The skill activates when user prompts contain keywords like:
 
 1. **New Wallet Creation**: Triggered when keywords indicate creation intent
 2. **Existing Wallet Selection**: 
-   - If account.json exists with accounts, match by username/address from user prompt
+   - If root `account.json` exists with accounts, match by username/address from user prompt
    - If no match found, use accountList[0] as default
    - New wallets are unshifted to the front of accountList
 
@@ -77,15 +77,15 @@ The script will:
 1. Check environment prerequisites
 2. Parse user prompt for username and buzz content
 3. Determine if wallet creation or selection is needed
-4. Create/select wallet and save to account.json
+4. Create/select wallet and save to root `account.json`
 5. Register MetaID if userName is empty
 6. Create MetaID node with username
-7. Fetch user info by address to get globalMetaId and update account.json
+7. Fetch user info by address to get globalMetaId and update root `account.json`
 8. Send Buzz message if content is provided
 
 ## Account Management
 
-Account data is stored in `account.json` at the skill root directory with the following structure:
+Account data is stored in `account.json` at the **project root** (MetaApp-Skill/) with the following structure:
 
 ```json
 {
@@ -105,7 +105,9 @@ Account data is stored in `account.json` at the skill root directory with the fo
 ```
 
 **Important Note**: 
-- Empty accounts (accounts with empty mnemonic) are automatically filtered out when writing to `account.json`. The system will not save accounts that have not been properly initialized.
+- Account file location: **project root** `account.json` (shared with MetaID-Agent-Chat).
+- If `MetaID-Agent/account.json` exists, it will be migrated to root on first run.
+- Empty accounts (accounts with empty mnemonic) are automatically filtered out when writing. The system will not save accounts that have not been properly initialized.
 - When creating a new `account.json` file, it will be initialized with an empty `accountList` array. The template file `template/demo-account.json` contains an example structure, but empty account entries should not be written to the actual `account.json` file.
 - After MetaID registration is completed, the system will automatically fetch user information by address using `getUserInfoByAddressByMs()` API to retrieve the `globalMetaId` (global MetaID supporting multiple chains: MVC/BTC/DOGE) and save it to the account record in `account.json`.
 

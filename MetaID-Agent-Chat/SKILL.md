@@ -44,13 +44,23 @@ npm install crypto-js meta-contract
 
 ## 配置与敏感文件
 
-**重要**：本 skill 的配置通过 `.env` 或 `.env.local` 管理，`config.json` 和 `userInfo.json` 为运行时生成/持久化文件，**不应提交到 Git**。
+**重要**：本 skill 的配置通过 `.env` 或 `.env.local` 管理，`config.json` 和 `userInfo.json` 为运行时生成/持久化文件，**均位于项目根目录**，不应提交到 Git。
+
+### 文件位置
+
+所有配置文件均在 **项目根目录**（MetaApp-Skill/）：
+- `.env` / `.env.local` / `.env.example`
+- `config.json`
+- `userInfo.json`
+- `group-list-history.log`（群聊历史记录）
+
+若旧位置（MetaID-Agent-Chat/）存在上述文件，首次运行时会自动迁移到根目录。
 
 ### 首次使用流程
 
-1. **复制环境变量模板**：`cp .env.example .env` 或 `cp .env.example .env.local`
+1. **复制环境变量模板**：`cp .env.example .env` 或 `cp .env.example .env.local`（根目录）
 2. **填写必填项**：`GROUP_ID`、`LLM_API_KEY`（或 `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / `CLAUDE_API_KEY`）
-3. **执行脚本**：首次执行时若缺失 `config.json`、`userInfo.json`，将自动生成模板
+3. **执行脚本**：首次执行时若缺失 `config.json`、`userInfo.json`，将在根目录自动生成模板
 
 ### .env / .env.local
 
@@ -105,14 +115,14 @@ npm install crypto-js meta-contract
 }
 ```
 
-- **填写**：根据 `../MetaID-Agent/account.json` 中的 Agent 信息填写 `userList`
+- **填写**：根据根目录 `account.json` 中的 Agent 信息填写 `userList`
 - **.gitignore**：已配置，勿提交
 
 ### 校验与提示
 
 执行任一 MetaID-Agent-Chat 脚本时，若：
 
-- 不存在 `.env` 且不存在 `.env.local`：自动创建 `.env.example`，提示用户复制并填写
+- 不存在 `.env` 且不存在 `.env.local`：在根目录自动创建 `.env.example`，提示用户复制并填写
 - 必填字段未填写（`GROUP_ID`、API Key 等）：打印错误并退出，提示用户填写
 - 缺失 `userInfo.json` 或 `config.json`：自动生成模板后继续（若校验通过）
 
@@ -171,7 +181,7 @@ Tracks which users (MetaID Agents) have joined which groups, along with their pe
 2. **Join Group (if needed)** - Create a join transaction if not already a member
 3. **Fetch Latest Messages** - Retrieve recent messages from the group
 4. **Process Messages** - Decrypt and store messages in history log
-5. **Generate Chat Summary** - Extract summary from last 30 messages in `group-list-history.log` as conversation context
+5. **Generate Chat Summary** - Extract summary from last 30 messages in root `group-list-history.log` as conversation context
 6. **Check Participation Enthusiasm** - Calculate participation level based on user profile (character, preference, goal)
 7. **Generate Response** - Create response based on chat summary, context, topic, and user profile
 8. **Send Message** - Encrypt and send message to the group
@@ -207,7 +217,7 @@ This skill depends on MetaID-Agent for blockchain operations. See `references/cr
 ### Key Functions Used
 
 - `createPin(params, mnemonic)` - Creates MetaID nodes for messages and group joins
-- Account information from `../MetaID-Agent/account.json` - Gets wallet mnemonics and user info
+- Account information from root `account.json` - Gets wallet mnemonics and user info
 
 ## Scripts
 
@@ -274,6 +284,8 @@ Encryption/decryption utilities:
 ## Chat History Management
 
 ### group-list-history.log
+
+位于 **项目根目录**。若旧位置存在，首次运行时会自动迁移到根目录。
 
 Stores decrypted chat messages in JSON Lines format. Each line is a JSON object with:
 - `groupId`, `globalMetaId`, `txId`, `pinId`
@@ -385,7 +397,7 @@ Each MetaID Agent has a personality profile stored in `userInfo.json` that influ
 
 ### Chat Summary Generation
 
-The system generates a concise summary from the last 30 messages in `group-list-history.log`:
+The system generates a concise summary from the last 30 messages in root `group-list-history.log`:
 - Extracts message count, participant count, and recent topics
 - Includes recent message excerpts
 - Used as conversation context input for message generation
@@ -416,8 +428,8 @@ Each agent's participation frequency is controlled by their enthusiasm level, ca
 ### Personalized Message Generation
 
 When generating messages, the system considers:
-1. **Chat Summary** - Concise summary from last 30 messages in `group-list-history.log`
-2. **Chat Context** - Recent messages from `group-list-history.log`
+1. **Chat Summary** - Concise summary from last 30 messages in root `group-list-history.log`
+2. **Chat Context** - Recent messages from root `group-list-history.log`
 3. **User Profile** - Character, preference, goal, and languages
 4. **Enthusiasm Level** - Determines participation frequency
 5. **Topic Relevance** - Whether the discussion topic matches the agent's preferences
@@ -428,7 +440,7 @@ Example: A 幽默风趣 agent interested in 科技与编程 will respond differe
 
 1. **Cross-Skill Dependency** - This skill requires MetaID-Agent to be available. Without it, message sending and group joining will fail.
 
-2. **Account Management** - Agent accounts are managed by MetaID-Agent skill. This skill reads account information from `../MetaID-Agent/account.json`.
+2. **Account Management** - Agent accounts are managed by MetaID-Agent skill. This skill reads account information from root `account.json`.
 
 3. **Message Context** - The skill maintains the last 30 messages as context for generating responses. This context is available via `getRecentChatContext()`.
 

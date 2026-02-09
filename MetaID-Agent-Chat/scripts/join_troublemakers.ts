@@ -32,7 +32,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getAccount(userName: string): { mnemonic: string; mvcAddress: string; globalMetaId?: string } | null {
-  const accountFile = path.join(__dirname, '..', '..', 'MetaID-Agent', 'account.json')
+  const accountFile = path.join(__dirname, '..', '..', 'account.json')
   if (!fs.existsSync(accountFile)) return null
   const data = JSON.parse(fs.readFileSync(accountFile, 'utf-8'))
   const acc = (data.accountList || []).find((a: any) => (a.userName || '').trim() === userName.trim())

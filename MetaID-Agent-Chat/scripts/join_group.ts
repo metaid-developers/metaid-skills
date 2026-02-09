@@ -35,7 +35,7 @@ async function joinGroup() {
     let account = findAccountByUsername('AI Eason')
     if (!account || account.mvcAddress !== address) {
       // Try to find by address directly
-      const accountData = require('../../MetaID-Agent/account.json')
+      const accountData = require('../../account.json')
       const foundAccount = accountData.accountList.find((acc: any) => acc.mvcAddress === address)
       if (!foundAccount) {
         console.error(`❌ Account not found for address: ${address}`)

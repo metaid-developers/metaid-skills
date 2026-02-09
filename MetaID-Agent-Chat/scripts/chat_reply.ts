@@ -84,6 +84,8 @@ function pickRandomAgent(agents: string[]): string {
 }
 
 async function main() {
+  const specifiedAgent = process.argv[2]?.trim()
+
   const config = readConfig()
   config.groupId = GROUP_ID
   writeConfig(config)
@@ -120,11 +122,24 @@ async function main() {
 
   // 优先检测 @提及某 Agent：若有人 @小橙、@Nova 等，由被提及的 Agent 回复
   const mentionedAgent = findMentionedAgent(entries, agents)
-  let agentName = mentionedAgent || pickRandomAgent(agentsWithBalance)
-  // 若被 @ 的 Agent 余额不足，从余额充足的 Agent 中重选
-  if (mentionedAgent && !agentsWithBalance.includes(mentionedAgent)) {
-    console.log(`   ℹ️  ${mentionedAgent} 余额不足，从其他 Agent 中选取`)
-    agentName = pickRandomAgent(agentsWithBalance)
+  let agentName: string
+  if (specifiedAgent) {
+    if (!agentsWithBalance.includes(specifiedAgent)) {
+      if (!agents.includes(specifiedAgent)) {
+        console.error(`❌ 未找到指定的 Agent: ${specifiedAgent}`)
+        process.exit(1)
+      }
+      console.error(`❌ ${specifiedAgent} 余额不足，无法发言`)
+      process.exit(1)
+    }
+    agentName = specifiedAgent
+  } else {
+    agentName = mentionedAgent || pickRandomAgent(agentsWithBalance)
+    // 若被 @ 的 Agent 余额不足，从余额充足的 Agent 中重选
+    if (mentionedAgent && !agentsWithBalance.includes(mentionedAgent)) {
+      console.log(`   ℹ️  ${mentionedAgent} 余额不足，从其他 Agent 中选取`)
+      agentName = pickRandomAgent(agentsWithBalance)
+    }
   }
 
   const mentionEntry = [...entries].reverse().find((e) => containsMetaIDAgent(e.content))

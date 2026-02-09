@@ -3,9 +3,12 @@ import * as path from 'path'
 import { ChatMessageItem, computeDecryptedMsg, getChannelNewestMessages } from './chat'
 import { ensureConfigFiles, getEnv, configFromEnv } from './env-config'
 
-const CONFIG_FILE = path.join(__dirname, '..', 'config.json')
-const USER_INFO_FILE = path.join(__dirname, '..', 'userInfo.json')
-const GROUP_LIST_HISTORY_FILE = path.join(__dirname, '..', 'group-list-history.log')
+// 根目录下的配置文件（与 .env、account.json 同级）
+const ROOT_DIR = path.join(__dirname, '..', '..')
+const CONFIG_FILE = path.join(ROOT_DIR, 'config.json')
+const USER_INFO_FILE = path.join(ROOT_DIR, 'userInfo.json')
+const GROUP_LIST_HISTORY_FILE = path.join(ROOT_DIR, 'group-list-history.log')
+const OLD_GROUP_LIST_HISTORY_FILE = path.join(__dirname, '..', 'group-list-history.log')
 
 let _configEnsured = false
 
@@ -354,9 +357,19 @@ export function forceUpdateUserProfile(
 }
 
 /**
- * Read group-list-history.log
+ * Read group-list-history.log（根目录）
  */
 export function readGroupListHistory(): HistoryLogEntry[] {
+  // 迁移：若旧位置存在且根目录不存在，则复制到根目录
+  if (fs.existsSync(OLD_GROUP_LIST_HISTORY_FILE) && !fs.existsSync(GROUP_LIST_HISTORY_FILE)) {
+    try {
+      fs.copyFileSync(OLD_GROUP_LIST_HISTORY_FILE, GROUP_LIST_HISTORY_FILE)
+      console.log('📦 已迁移: group-list-history.log → 根目录')
+    } catch {
+      /* ignore */
+    }
+  }
+
   try {
     if (fs.existsSync(GROUP_LIST_HISTORY_FILE)) {
       const content = fs.readFileSync(GROUP_LIST_HISTORY_FILE, 'utf-8')
@@ -747,7 +760,7 @@ export function getMetaIDAgentAccount(mvcAddress: string): {
   globalMetaId?: string
 } | null {
   try {
-    const accountFile = path.join(__dirname, '..', '..', 'MetaID-Agent', 'account.json')
+    const accountFile = path.join(ROOT_DIR, 'account.json')
     if (fs.existsSync(accountFile)) {
       const content = fs.readFileSync(accountFile, 'utf-8')
       const data = JSON.parse(content)
@@ -778,7 +791,7 @@ export function getAgentsInGroup(groupId: string): string[] {
     .filter((n): n is string => !!n && n.trim() !== '')
   if (agents.length === 0) {
     try {
-      const accountFile = path.join(__dirname, '..', '..', 'MetaID-Agent', 'account.json')
+      const accountFile = path.join(ROOT_DIR, 'account.json')
       if (fs.existsSync(accountFile)) {
         const data = JSON.parse(fs.readFileSync(accountFile, 'utf-8'))
         agents = (data.accountList || [])
@@ -893,7 +906,7 @@ export function findAccountByUsername(username: string): {
   globalMetaId?: string
 } | null {
   try {
-    const accountFile = path.join(__dirname, '..', '..', 'MetaID-Agent', 'account.json')
+    const accountFile = path.join(ROOT_DIR, 'account.json')
     if (fs.existsSync(accountFile)) {
       const content = fs.readFileSync(accountFile, 'utf-8')
       const data = JSON.parse(content)

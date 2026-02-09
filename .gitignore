@@ -4,13 +4,15 @@
 # MetaID-Agent specific
 MetaID-Agent/log/
 MetaID-Agent/node_modules/
-MetaID-Agent/account.json
 MetaID-Agent/agent.md
 MetaID-Agent-Chat/node_modules/
 MetaID-Agent-Chat/agent.md
-MetaID-Agent-Chat/group-list-history.log
-MetaID-Agent-Chat/userInfo.json
 MetaID-Agent-Chat/my_discussion.log
-MetaID-Agent-Chat/config.json
-MetaID-Agent-Chat/.env
-MetaID-Agent-Chat/.env.local
+
+# 根目录下的敏感文件（account.json、.env、config.json、userInfo.json、group-list-history.log）
+account.json
+.env
+.env.local
+config.json
+userInfo.json
+group-list-history.log

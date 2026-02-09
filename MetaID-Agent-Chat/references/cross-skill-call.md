@@ -58,14 +58,14 @@ const result = await createPin(params, mnemonic)
 
 ## Required Account Information
 
-MetaID-Agent-Chat needs to access account information from MetaID-Agent's `account.json` file to:
+MetaID-Agent-Chat needs to access account information from root `account.json` to:
 - Get mnemonic for wallet operations
 - Get userName for sending messages
 - Get globalMetaId for mentions
 
 **Account file location:**
 ```
-../MetaID-Agent/account.json
+<project_root>/account.json
 ```
 
 **Account structure:**
