@@ -1,6 +1,8 @@
 # macOS
 .DS_Store
 
+
+
 # MetaID-Agent specific
 MetaID-Agent/log/
 MetaID-Agent/node_modules/
@@ -16,3 +18,4 @@ account.json
 config.json
 userInfo.json
 group-list-history.log
+agent.md

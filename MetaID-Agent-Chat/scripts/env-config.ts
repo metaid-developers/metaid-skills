@@ -120,12 +120,27 @@ function createUserInfoTemplate(): void {
   fs.writeFileSync(USER_INFO_FILE, JSON.stringify(template, null, 2), 'utf-8')
 }
 
+export interface GroupInfoItem {
+  groupId: string
+  groupName: string
+  groupAnnouncement: string
+  grouplastIndex: number
+  llm?: {
+    provider?: string
+    apiKey?: string
+    baseUrl?: string
+    model?: string
+    temperature?: number
+    maxTokens?: number
+  }
+}
+
 /**
- * 从 env 构建 config 对象（用于写入 config.json）
+ * 从 env 构建 config 对象（groupInfoList 格式，groupInfoList[0] 来自 .env）
  */
-export function configFromEnv(env: Record<string, string>): object {
+export function configFromEnv(env: Record<string, string>): { groupInfoList: GroupInfoItem[] } {
   const grouplastIndex = parseInt(env.GROUP_LAST_INDEX || '0', 10) || 0
-  return {
+  const first: GroupInfoItem = {
     groupId: env.GROUP_ID || '',
     groupName: env.GROUP_NAME || '',
     groupAnnouncement: env.GROUP_ANNOUNCEMENT || '',
@@ -139,19 +154,19 @@ export function configFromEnv(env: Record<string, string>): object {
       maxTokens: parseInt(env.LLM_MAX_TOKENS || '500', 10) || 500,
     },
   }
+  return { groupInfoList: [first] }
 }
 
 /**
- * 创建 config.json（从 env 写入，不包含敏感 apiKey）
+ * 创建 config.json（groupInfoList 格式，groupInfoList[0] 来自 .env，不包含 llm.apiKey）
  */
 function createConfigFromEnv(env: Record<string, string>): void {
-  const config = configFromEnv(env)
-  // 写入时不包含 llm.apiKey，运行时从 env 读取
-  const safeConfig = { ...config } as any
-  if (safeConfig.llm) {
-    safeConfig.llm = { ...safeConfig.llm, apiKey: '' }
-  }
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(safeConfig, null, 2), 'utf-8')
+  const { groupInfoList } = configFromEnv(env)
+  const safeList = groupInfoList.map((g) => ({
+    ...g,
+    llm: g.llm ? { ...g.llm, apiKey: '' } : undefined,
+  }))
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify({ groupInfoList: safeList }, null, 2), 'utf-8')
 }
 
 /**
@@ -165,7 +180,7 @@ function validateAndExit(env: Record<string, string>): void {
   if ((!groupId || groupId === 'your-group-id') && fs.existsSync(CONFIG_FILE)) {
     try {
       const cfg = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'))
-      groupId = cfg.groupId || ''
+      groupId = cfg.groupInfoList?.[0]?.groupId || cfg.groupId || ''
     } catch {
       /* ignore */
     }

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { ChatMessageItem, computeDecryptedMsg, getChannelNewestMessages } from './chat'
-import { ensureConfigFiles, getEnv, configFromEnv } from './env-config'
+import { ensureConfigFiles, getEnv, configFromEnv, type GroupInfoItem } from './env-config'
 
 // 根目录下的配置文件（与 .env、account.json 同级）
 const ROOT_DIR = path.join(__dirname, '..', '..')
@@ -22,6 +22,9 @@ export interface LLMConfig {
 }
 
 export interface Config {
+  /** 群组列表（新格式） */
+  groupInfoList: GroupInfoItem[]
+  /** 当前默认群组（groupInfoList[0] 的便捷访问，向后兼容） */
   groupId: string
   groupName: string
   groupAnnouncement: string
@@ -72,7 +75,54 @@ export interface HistoryLogEntry {
 }
 
 /**
- * Read config: 优先从 .env / .env.local 获取，config.json 仅用于 grouplastIndex 等运行时持久化字段
+ * 归一化 config：支持旧格式（扁平）与新格式（groupInfoList）
+ */
+function normalizeConfig(raw: any, fromEnv: { groupInfoList: GroupInfoItem[] }): Config {
+  let list: GroupInfoItem[] = fromEnv.groupInfoList
+
+  if (raw?.groupInfoList && Array.isArray(raw.groupInfoList) && raw.groupInfoList.length > 0) {
+    list = raw.groupInfoList
+  } else if (raw?.groupId) {
+    // 旧格式迁移：扁平结构 → groupInfoList
+    list = [
+      {
+        groupId: raw.groupId || '',
+        groupName: raw.groupName || '',
+        groupAnnouncement: raw.groupAnnouncement || '',
+        grouplastIndex: raw.grouplastIndex ?? 0,
+        llm: raw.llm,
+      },
+    ]
+  }
+
+  const first = list[0] || fromEnv.groupInfoList[0]
+  const env = getEnv()
+  return {
+    groupInfoList: list,
+    groupId: first.groupId || '',
+    groupName: first.groupName || '',
+    groupAnnouncement: first.groupAnnouncement || '',
+    grouplastIndex: first.grouplastIndex ?? 0,
+    llm: {
+      ...first.llm,
+      provider: (first.llm?.provider || 'deepseek') as LLMConfig['provider'],
+      apiKey:
+        env.LLM_API_KEY ||
+        env.DEEPSEEK_API_KEY ||
+        env.OPENAI_API_KEY ||
+        env.CLAUDE_API_KEY ||
+        first.llm?.apiKey ||
+        '',
+      baseUrl: first.llm?.baseUrl || 'https://api.deepseek.com',
+      model: first.llm?.model || 'DeepSeek-V3.2',
+      temperature: first.llm?.temperature ?? 0.8,
+      maxTokens: first.llm?.maxTokens ?? 500,
+    },
+  }
+}
+
+/**
+ * Read config: 优先从 .env / .env.local 获取，config.json 为 groupInfoList 格式，groupInfoList[0] 可由 .env 生成
  */
 export function readConfig(): Config {
   if (!_configEnsured) {
@@ -81,52 +131,40 @@ export function readConfig(): Config {
   }
 
   const env = getEnv()
-  const fromEnv = configFromEnv(env) as Config
+  const fromEnv = configFromEnv(env)
 
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const content = fs.readFileSync(CONFIG_FILE, 'utf-8')
-      const fromFile = JSON.parse(content) as Config
-      return {
-        ...fromEnv,
-        groupId: fromFile.groupId || fromEnv.groupId,
-        groupName: fromFile.groupName || fromEnv.groupName,
-        groupAnnouncement: fromFile.groupAnnouncement || fromEnv.groupAnnouncement,
-        grouplastIndex: fromFile.grouplastIndex ?? fromEnv.grouplastIndex,
-        llm: {
-          ...fromEnv.llm,
-          provider: fromEnv.llm?.provider || 'deepseek',
-          apiKey:
-            env.LLM_API_KEY ||
-            env.DEEPSEEK_API_KEY ||
-            env.OPENAI_API_KEY ||
-            env.CLAUDE_API_KEY ||
-            fromEnv.llm?.apiKey ||
-            '',
-          baseUrl: fromEnv.llm?.baseUrl || 'https://api.deepseek.com',
-          model: fromEnv.llm?.model || 'DeepSeek-V3.2',
-          temperature: fromEnv.llm?.temperature ?? 0.8,
-          maxTokens: fromEnv.llm?.maxTokens ?? 500,
-        },
-      }
+      const fromFile = JSON.parse(content)
+      return normalizeConfig(fromFile, fromEnv)
     }
   } catch (error) {
     console.error('Error reading config.json:', error)
   }
 
-  return fromEnv
+  return normalizeConfig(null, fromEnv)
 }
 
 /**
- * Write config.json（仅持久化 groupId、groupName、groupAnnouncement、grouplastIndex，不写入 llm.apiKey）
+ * Write config.json（groupInfoList 格式，更新 groupInfoList[0]，不写入 llm.apiKey）
  */
 export function writeConfig(config: Config): void {
   try {
-    const safe: Config = {
+    const list = config.groupInfoList?.length ? [...config.groupInfoList] : []
+    const first = list[0] || {
       groupId: config.groupId,
       groupName: config.groupName,
       groupAnnouncement: config.groupAnnouncement,
       grouplastIndex: config.grouplastIndex,
+      llm: config.llm,
+    }
+    list[0] = {
+      ...first,
+      groupId: config.groupId || first.groupId,
+      groupName: config.groupName || first.groupName,
+      groupAnnouncement: config.groupAnnouncement || first.groupAnnouncement,
+      grouplastIndex: config.grouplastIndex ?? first.grouplastIndex,
       llm: config.llm
         ? {
             provider: config.llm.provider,
@@ -135,9 +173,13 @@ export function writeConfig(config: Config): void {
             temperature: config.llm.temperature,
             maxTokens: config.llm.maxTokens,
           }
-        : undefined,
+        : first.llm,
     }
-    fs.writeFileSync(CONFIG_FILE, JSON.stringify(safe, null, 2), 'utf-8')
+    const safeList = list.map((g) => ({
+      ...g,
+      llm: g.llm ? { ...g.llm, apiKey: undefined } : undefined,
+    }))
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ groupInfoList: safeList }, null, 2), 'utf-8')
   } catch (error) {
     console.error('Error writing config.json:', error)
     throw error

@@ -84,10 +84,30 @@ npm install crypto-js meta-contract
 
 ### config.json
 
-- **来源**：由 `.env` / `.env.local` 生成，首次缺失时自动创建
-- **持久化字段**：仅 `groupId`、`groupName`、`groupAnnouncement`、`grouplastIndex` 及 LLM 非敏感配置
-- **不写入**：`llm.apiKey` 等敏感字段，运行时从 env 读取
-- **.gitignore**：已配置，勿提交
+- **格式**：`groupInfoList` 数组，支持多群配置
+- **groupInfoList[0]**：由 `.env` / `.env.local` 动态生成（GROUP_ID、GROUP_NAME 等）
+- **持久化**：`grouplastIndex` 运行时更新；`llm.apiKey` 不写入，运行时从 env 读取
+- **向后兼容**：旧格式（扁平 `groupId`）会自动迁移为 `groupInfoList`
+
+```json
+{
+  "groupInfoList": [
+    {
+      "groupId": "your-group-id",
+      "groupName": "群聊名称",
+      "groupAnnouncement": "",
+      "grouplastIndex": 0,
+      "llm": {
+        "provider": "deepseek",
+        "baseUrl": "https://api.deepseek.com",
+        "model": "DeepSeek-V3.2",
+        "temperature": 0.8,
+        "maxTokens": 500
+      }
+    }
+  ]
+}
+```
 
 ### userInfo.json
 
@@ -130,9 +150,9 @@ npm install crypto-js meta-contract
 
 ## Configuration（Legacy）
 
-### config.json（由 .env 生成）
+### config.json（groupInfoList 格式）
 
-Configure the target group chat in `.env`:
+`groupInfoList[0]` 由 `.env` 生成。 Configure the first group in `.env`:
 
 ```bash
 GROUP_ID=your-group-id
@@ -140,8 +160,8 @@ GROUP_NAME=Group Name
 GROUP_ANNOUNCEMENT=Group announcement
 ```
 
-- `groupId` - The group ID to interact with (required)
-- `grouplastIndex` - Last message index (automatically updated in config.json)
+- `groupInfoList[0].groupId` - The default group ID (required)
+- `groupInfoList[0].grouplastIndex` - Last message index (automatically updated)
 
 ### userInfo.json
 
