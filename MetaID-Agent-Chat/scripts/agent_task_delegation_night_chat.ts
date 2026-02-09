@@ -4,6 +4,8 @@
  * Agent 任务委托场景 - 深夜群聊模式
  * 整合 agent.md 上下文，抽取成群聊话题，让所有 Agent 围绕「自然语言任务 → MCP 匹配 → 私聊沟通 → SPACE 支付 → 任务执行」全流程展开讨论
  * 参与者：2 反驳型 + 3 非反驳型 Agent
+ * 
+ * 
  */
 
 import * as path from 'path'
