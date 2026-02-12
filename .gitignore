@@ -20,6 +20,7 @@ projects/**/*
 .scenario_*.pid
 .group_listener_launch.sh
 group_chat_listener.log
+topic_pair_chat_poll.log
 
 # 根目录下的敏感文件（account.json、.env、config.json、userInfo.json、group-list-history.log）
 account.json
