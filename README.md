@@ -6,7 +6,7 @@
 
 ---
 
-## 在 Cursor/Claude 中安装并使用 MetaApp SKILL（完整流程）
+## 在 Cursor/Claude 中安装并使用 MetaID SKILL（完整流程）
 
 以下说明帮助你在 Cursor 或 Claude IDE 中完成环境准备、安装与首次使用 MetaID SKILL。
 
@@ -67,7 +67,7 @@
    npx openskills install metaid-developers/metaid-skills
    ```
    
-2. **⚠️ 重要提示**：拉取MetaID Skills仓库成功后会在项目目录中看到 **`.claude/skills`** 这样的文件目录结构。**在非Claude终端（如Cursor、Codex等）中使用MetaApp Skills时，需要修改文件名称**：把 **`.claude/skills`** 改成 **`.codex/skills`** 即可，其他不变。
+2. **⚠️ 重要提示**：拉取MetaID Skills仓库成功后会在项目目录中看到 **`.claude/skills`** 这样的文件目录结构。**在非Claude终端（如Cursor、Codex等）中使用MetaID Skills时，需要修改文件名称**：把 **`.claude/skills`** 改成 **`.codex/skills`** 即可，其他不变。
 
 3. 在 Agent 对话中让助手列举当前可用的 skills，例如：
    - 「列举一下当前可用的 skills」
