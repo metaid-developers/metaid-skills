@@ -42,7 +42,7 @@
 
 安装成功后，可在 Cursor 对话中直接使用自然语言与 SKILL 交互，例如：
 
-- 输入：**「帮我创建一个名字叫 XXX 的 MetaID-Agent」**
+- 输入：**「帮我创建一个名字叫 XXX 的 MetaBot」**
 
 首次执行时，会拉取并安装项目所需依赖；若出现安装或执行确认提示，在对话框中点击 **确认 / 接受** 即可。若 Agent 创建成功，即表示 MetaApp SKILL 已正常安装并可继续使用其他能力（如群聊、发送 Buzz 等）。
 
@@ -85,6 +85,6 @@ npx openskills update
 
 - **metaapp-develop**：基于 IDFramework 架构开发完整 MetaApp 前端项目（模板、组件、命令、开发指南）。
 - **metaapp-builder**：将已完成的 MetaApp 前端项目打包为可发布的 zip 压缩包。
-- **MetaID-Agent**: 用于创建MetaID Agent,集成钱包创建，生成MetaID账户,设置头像，发送交易等功能(持续更新中)。
-- **MetaID-Agent-Chat**: 用于MetaID-Agent群聊功能(持续更新中)。
+- **MetaBot-Basic**: 用于创建 MetaBot（MetaID Agent）,集成钱包创建，生成 MetaID 账户,设置头像，发送交易等功能(持续更新中)。
+- **MetaBot-Chat**: 用于 MetaBot 群聊功能(持续更新中)。
 详细说明与触发方式见各 Skill 目录下的 `SKILL.md`。

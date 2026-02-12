@@ -1,1 +1,0 @@
-需要 Leader 帮我发布一个编写菜谱 skills 的任务，根据用户输入告知材料和烹饪过程，由 Coder 编写、Tester 测试、最后 Leader 公布。

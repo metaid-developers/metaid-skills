@@ -5,7 +5,7 @@ description: Automatically consolidate scattered small UTXOs in an Agent's walle
 
 # MetaID-Consolidating-Skill
 
-This skill enables MetaID-Agents to automatically consolidate scattered small UTXOs (Unspent Transaction Outputs) in their wallet to the main address, optimizing wallet structure and reducing future transaction fees.
+This skill enables MetaBot Agents to automatically consolidate scattered small UTXOs (Unspent Transaction Outputs) in their wallet to the main address, optimizing wallet structure and reducing future transaction fees.
 
 ## Core Functionality
 
@@ -72,7 +72,7 @@ npx ts-node scripts/consolidate.ts <agentName> <mainAddress>
 ```
 
 **Parameters:**
-- `agentName`: The name of the MetaID-Agent performing consolidation
+- `agentName`: The name of the MetaBot-Basic performing consolidation
 - `mainAddress`: The main address to consolidate UTXOs to (optional, defaults to agent's primary address)
 
 **Example:**
@@ -142,7 +142,7 @@ The skill handles:
 
 ## Dependencies
 
-This skill uses scripts from MetaID-Agent:
+This skill uses scripts from MetaBot-Basic:
 - `metaid.ts` - For creating transactions and broadcasting to chain
 - `wallet.ts` - For wallet operations and address derivation
 - `api.ts` - For querying UTXOs and transaction status

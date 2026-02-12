@@ -16,7 +16,7 @@ export interface AccountData {
   accountList: Account[]
 }
 
-// 根目录下的 account.json（与 MetaID-Agent-Chat 共享）
+// 根目录下的 account.json（与 MetaBot-Chat 共享）
 const ROOT_DIR = path.join(__dirname, '..', '..')
 const ACCOUNT_FILE = path.join(ROOT_DIR, 'account.json')
 const OLD_ACCOUNT_FILE = path.join(__dirname, '..', 'account.json')
@@ -62,7 +62,7 @@ export function writeAccountFile(data: AccountData): void {
 
 // Create account.json from template if it doesn't exist
 export function ensureAccountFile(): void {
-  // 迁移：若旧位置 MetaID-Agent/account.json 存在且根目录不存在，则复制到根目录
+  // 迁移：若旧位置 MetaBot-Basic/account.json 存在且根目录不存在，则复制到根目录
   if (fs.existsSync(OLD_ACCOUNT_FILE) && !fs.existsSync(ACCOUNT_FILE)) {
     try {
       fs.copyFileSync(OLD_ACCOUNT_FILE, ACCOUNT_FILE)

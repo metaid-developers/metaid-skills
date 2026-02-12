@@ -1,2 +1,0 @@
-# 可选：接入 OpenAI 兼容 API 时使用
-requests>=2.28.0
