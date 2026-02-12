@@ -1,5 +1,5 @@
 # MetaApp Skills（Claude Code 使用说明）
-# 
+##
 > **📖 重要提示**：**在使用 MetaApp Skills 前，请先仔细阅读并理解本 README.md 的全部内容**，以确保正确配置和使用。
 
 本目录包含可在 **Claude Code**（Cursor / Claude IDE）中使用的 MetaApp 开发与打包 Skills。通过 OpenSkills 安装后，可在对话中使用 `/skills` 查看并启用这些能力。
