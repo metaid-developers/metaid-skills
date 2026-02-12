@@ -4,13 +4,13 @@
 
 
 # MetaID-Agent specific
-.claude/skills/MetaID-Agent/log/
-.claude/skills/MetaID-Agent/node_modules/
-.claude/skills/MetaID-Agent/agent.md
-.claude/skills/MetaID-Agent-Chat/node_modules/
-.claude/skills/MetaID-Agent-Chat/agent.md
-.claude/skills/MetaID-Agent-Chat/my_discussion.log
-.claude/skills/MetaID-Agent-Chat/group_chat_listener.log
+/MetaID-Agent/log/
+/MetaID-Agent/node_modules/
+/MetaID-Agent/agent.md
+/MetaID-Agent-Chat/node_modules/
+/MetaID-Agent-Chat/agent.md
+/MetaID-Agent-Chat/my_discussion.log
+/MetaID-Agent-Chat/group_chat_listener.log
 
 
 projects/**/*
