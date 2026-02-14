@@ -1,0 +1,13 @@
+初始化 API 客户端: https://api.idchat.io/chat-api
+
+✅ 监听已启动（群聊 + 私聊）
+   当前账户: AI Eason globalMetaId: idq1v8w7n8pfzcw9…
+   Socket 连接 URL: https://api.idchat.io/socket/socket.io
+   日志目录: 根目录 chat-history/
+   配置: 根目录 chat-config.json
+   收到推送时将打印 [Socket 推送] 日志，按 Ctrl+C 停止
+
+[Socket] 正在连接... https://api.idchat.io/socket/socket.io
+✅ [Socket] 连接成功
+   [Socket] 连接 URL: https://api.idchat.io/socket/socket.io
+   [Socket] socket.id: 4cIHrg7QNyISPgAAAAAAAEoP

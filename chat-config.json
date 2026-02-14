@@ -1,0 +1,19 @@
+{
+  "group": [
+    {
+      "groupId": "",
+      "lastTimestamp": 0,
+      "lastIndex": 0
+    }
+  ],
+  "private": [
+    {
+      "sharedSecret": "",
+      "metaId": "idq1v8w7n8pfzcw9x0dqe3xl0eek3ypj2apswy58ez",
+      "otherMetaId": "6f8df13008fa7f2ed065273c9b879ee92a63bdeaa1a9507a4875e514cf0867ac",
+      "otherGlobalMetaId": "idq1g9gsjakcw73f05d2x74ylpaz4a4h3u4c4gjw2n",
+      "lastTimestamp": 5,
+      "lastIndex": 5
+    }
+  ]
+}

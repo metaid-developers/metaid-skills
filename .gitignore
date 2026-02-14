@@ -24,11 +24,14 @@ topic_pair_chat_poll.log
 
 # 根目录下的敏感文件（account.json、.env、config.json、userInfo.json、group-list-history.log）
 account.json
+chat-history
 .env
+
 .env.local
 config.json
 userInfo.json
 group-list-history.log
+.unified_chat_listener.pid
 agent.md
 agent2.md
 agent3.md
