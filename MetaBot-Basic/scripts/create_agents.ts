@@ -43,12 +43,12 @@ function syncMetaIdToFiles(mvcAddress: string, metaId: string): void {
 }
 
 /**
- * 创建单个 MetaID Agent
+ * 创建单个 MetaBot
  * @param username 用户名（链上 name 节点）
  * @param profileOverrides 可选人设覆盖，未传则随机分配
  */
 export async function createAgent(username: string, profileOverrides?: Partial<AccountProfile>): Promise<void> {
-  console.log(`\n🚀 开始创建 MetaID Agent: ${username}`)
+  console.log(`\n🚀 开始创建 MetaBot: ${username}`)
   console.log('='.repeat(50))
 
   try {
@@ -297,8 +297,8 @@ async function main() {
   const args = process.argv.slice(2)
   const agents = args.length > 0 ? args : ['小橙', 'Nova', '墨白']
 
-  console.log('🎯 开始批量创建 MetaID Agents')
-  console.log(`📋 将创建以下 Agents: ${agents.join(', ')}`)
+  console.log('🎯 开始批量创建 MetaBot')
+  console.log(`📋 将创建以下 MetaBot: ${agents.join(', ')}`)
 
   for (const agentName of agents) {
     try {

@@ -132,7 +132,7 @@ export async function parseLocalTransaction(transaction: mvc.Transaction): Promi
   outputIndex: number | null
 }> {
   const outputs = transaction.outputs
-  const outputIndex = outputs.findIndex((output) => output.script.toASM().includes('OP_RETURN'))
+  const outputIndex = outputs.findIndex((output: mvc.Transaction.Output) => output.script.toASM().includes('OP_RETURN'))
 
   if (outputIndex === -1)
     return {
@@ -307,8 +307,8 @@ export const payTransactions = async (
     }
 
     const addressObj = new mvc.Address(address, network as any)
-    const totalOutput = tx.outputs.reduce((acc, output) => acc + output.satoshis, 0)
-    const totalInput = tx.inputs.reduce((acc, input) => acc + input.output!.satoshis, 0)
+    const totalOutput = tx.outputs.reduce((acc: number, output: mvc.Transaction.Output) => acc + output.satoshis, 0)
+    const totalInput = tx.inputs.reduce((acc: number, input: mvc.Transaction.Input) => acc + input.output!.satoshis, 0)
     const currentSize = tx.toBuffer().length
     const currentFee = feeb * currentSize
     const difference = totalOutput - totalInput + currentFee
@@ -465,11 +465,11 @@ async function createPinMvc(
       const tx = TxComposer.deserialize(txStr)
       const mvcTx = tx.tx
       
-      const inputTotal = mvcTx.inputs.reduce((sum, input) => {
+      const inputTotal = mvcTx.inputs.reduce((sum: number, input: mvc.Transaction.Input) => {
         return sum + (input.output?.satoshis || 0)
       }, 0)
       
-      const outputTotal = mvcTx.outputs.reduce((sum, output) => {
+      const outputTotal = mvcTx.outputs.reduce((sum: number, output: mvc.Transaction.Output) => {
         return sum + output.satoshis
       }, 0)
       
@@ -495,11 +495,11 @@ async function createPinMvc(
     const tx = TxComposer.deserialize(txStr)
     const mvcTx = tx.tx
 
-    const inputTotal = mvcTx.inputs.reduce((sum, input) => {
+    const inputTotal = mvcTx.inputs.reduce((sum: number, input: mvc.Transaction.Input) => {
       return sum + (input.output?.satoshis || 0)
     }, 0)
 
-    const outputTotal = mvcTx.outputs.reduce((sum, output) => {
+    const outputTotal = mvcTx.outputs.reduce((sum: number, output: mvc.Transaction.Output) => {
       return sum + output.satoshis
     }, 0)
 

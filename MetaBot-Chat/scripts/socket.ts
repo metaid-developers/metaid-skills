@@ -74,6 +74,19 @@ export class SocketIOClient {
         this.onMessage(data)
       })
 
+      // 调试：打印所有收到的事件名，便于确认私聊/群聊推送是否到达及事件名
+      this.socket.onAny((eventName: string, ...args: any[]) => {
+        if (!['connect', 'disconnect', 'connect_error', 'pong', 'ping', 'heartbeat_ack', 'reconnect', 'reconnect_attempt', 'reconnect_error'].includes(eventName)) {
+          const hasPayload = args.length > 0 && args[0] != null
+          const payloadPreview = hasPayload && typeof args[0] === 'object' ? Object.keys(args[0]).slice(0, 8).join(',') : (hasPayload ? String(args[0]).slice(0, 60) : '')
+          console.log('[Socket 收到事件]', eventName, hasPayload ? 'payload.keys: ' + payloadPreview : '')
+        }
+      })
+
+      // 注意：不单独监听 WS_SERVER_NOTIFY_GROUP_CHAT / WS_SERVER_NOTIFY_PRIVATE_CHAT
+      // 服务端可能对同一条消息同时推送到 message 和具体事件名，会导致重复触发 onMessage
+      // 所有聊天消息已通过 message 事件统一接收，handleReceivedMessage 根据 payload.M 解析路由
+
       this.socket.on('heartbeat_ack', () => {
         if (this.heartbeatTimeoutId) {
           clearTimeout(this.heartbeatTimeoutId)

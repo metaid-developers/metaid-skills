@@ -1,5 +1,6 @@
 #!/bin/bash
 # 统一聊天监听（群聊 + 私聊），使用 Socket 推送
+# Cursor 内置终端运行需 network/all 权限，否则会 xhr poll error（见 .cursorrules / SKILL.md）
 # 用法: ./run_unified_chat_listener.sh [Agent名称] [--no-open] [--auto-reply]
 # 示例: ./run_unified_chat_listener.sh "AI Eason" --auto-reply  # 新消息时自动根据最新消息回复
 # 可选环境变量: AUTO_REPLY=1 开启自动回复，REPLY_MAX_COUNT=20 最多回复次数

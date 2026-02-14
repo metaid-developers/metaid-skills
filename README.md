@@ -81,6 +81,15 @@
 npx openskills update
 ```
 
+## Cursor 内运行聊天监听
+
+在 Cursor 中启动**聊天监听**（如统一监听、群聊监听）时，需使用网络权限，否则会报 `xhr poll error` 或 `getaddrinfo ENOTFOUND api.idchat.io`。
+
+- **推荐**：通过对话让 AI 执行「让 XX 开启聊天监听」，AI 会按 `.cursorrules` 使用 `required_permissions: ["all"]` 一键启动。
+- **备选**：在系统终端（Terminal.app 等）中直接执行 `MetaBot-Chat/scripts/run_unified_chat_listener.sh "Agent名" --auto-reply`。
+
+详见 `MetaBot-Chat/SKILL.md` 1.1 节。
+
 ## 当前可用的 Skills
 
 - **metaapp-develop**：基于 IDFramework 架构开发完整 MetaApp 前端项目（模板、组件、命令、开发指南）。

@@ -1,6 +1,6 @@
 ---
 name: metabot-chat
-description: Manage group chat messages, send messages, and join groups on the MetaID network. This skill handles fetching group chat messages, encrypting/decrypting messages, sending messages to groups, and joining groups. It works in conjunction with metabot-basic skill for blockchain operations. Use when users want to: (1) Fetch group chat messages from a specified group, (2) Send messages to a group chat, (3) Join a group chat, (4) Have MetaBot Agents participate in group discussions based on topics, (5) 开启群聊/监听群聊/让 XX Agent 监听群聊信息 - Cursor/AI 必须直接帮用户执行启动脚本（一键即启动），除非用户明确要求手动启动，否则禁止仅输出命令让用户自行执行, (6) 对监听群聊内容进行具体 XX 场景的回复 - Cursor/AI 必须自动执行对应场景脚本, (7) 开启统一聊天监听（群聊+私聊）或私聊回复. Requires Node.js >= 18.x.x, TypeScript, and metabot-basic skill as a dependency. Dependencies: crypto-js, meta-contract, socket.io-client.
+description: Manage group chat messages, send messages, and join groups on the MetaID network. This skill handles fetching group chat messages, encrypting/decrypting messages, sending messages to groups, and joining groups. It works in conjunction with metabot-basic skill for blockchain operations. Use when users want to: (1) Fetch group chat messages from a specified group, (2) Send messages to a group chat, (3) Join a group chat, (4) Have MetaBot Agents participate in group discussions based on topics, (5) 开启群聊/监听群聊/让 XX Agent 监听群聊信息 - Cursor/AI 必须直接帮用户执行启动脚本（一键即启动），除非用户明确要求手动启动，否则禁止仅输出命令让用户自行执行, (6) 对监听群聊内容进行具体 XX 场景的回复 - Cursor/AI 必须自动执行对应场景脚本, (7) 开启统一聊天监听（群聊+私聊）或私聊回复. **重要**：执行 run_unified_chat_listener.sh 或 run_group_chat_listener.sh 时，run_terminal_cmd 必须传入 required_permissions: ["all"]，否则 Cursor 沙箱会阻断 Socket 连接导致 xhr poll error. Requires Node.js >= 18.x.x, TypeScript, and metabot-basic skill as a dependency. Dependencies: crypto-js, meta-contract, socket.io-client.
 ---
 
 # metabot-chat
@@ -268,9 +268,10 @@ The script accepts prompts in the following format:
 
 **行为要求**：
 1. **禁止**：仅输出「请执行 xxx」「请运行以下命令」「在项目里进入目录后执行」等，把执行责任推给用户。用户未明确说「我要自己手动启动」时，不得以任何理由只给命令不执行。
-2. **必须**：在输出简要说明（如「正在为您开启群聊监听」）后，**立即调用终端工具自动执行**对应脚本（如 `run_group_chat_listener.sh`、`run_dayouyi_listener.sh`、`run_xiaocheng_listener.sh` 等），执行完成后告知「监听已开启」及关闭/查看脚本。
-3. **执行方式**：**默认直接执行脚本（不加 `--no-open`）**，由脚本在系统终端（如 Terminal.app）中拉起群聊监听进程；仅当用户**明确要求在当前终端/IDE 内后台运行**时，才使用 `--no-open` 参数。
-4. **例外**：仅当用户**明确强调**「我要自己手动启动」「不要自动执行，只告诉我命令」等时，才可只输出命令而不执行。
+2. **必须**：在输出简要说明（如「正在为您开启群聊监听」）后，**立即调用终端工具自动执行**对应脚本（如 `run_group_chat_listener.sh`、`run_unified_chat_listener.sh` 等），执行完成后告知「监听已开启」及关闭/查看脚本。
+3. **Cursor 内置终端执行时**：run_terminal_cmd **必须**传入 `required_permissions: ["all"]`，否则会 xhr poll error / ENOTFOUND（见 1.1 节）。
+4. **执行方式**：**默认直接执行脚本（不加 `--no-open`）**，由脚本在系统终端（如 Terminal.app）中拉起群聊监听进程；仅当用户**明确要求在当前终端/IDE 内后台运行**时，才使用 `--no-open` 参数。
+5. **例外**：仅当用户**明确强调**「我要自己手动启动」「不要自动执行，只告诉我命令」等时，才可只输出命令而不执行。
 
 **示例（正确）**：用户说「让小橙监听群聊信息并对最新消息进行回复」→ Cursor/AI 输出「正在为您开启群聊监听」，随即执行 `./scripts/run_xiaocheng_listener.sh`（让脚本在系统终端中打开监听，不加 `--no-open`），执行完成后输出「监听已开启」及关闭/查看命令。
 
@@ -321,27 +322,23 @@ The script accepts prompts in the following format:
 
 **依赖**：`socket.io-client`；私聊加解密使用 `crypto.ts` 的 `ecdhEncrypt`/`ecdhDecrypt`，协商密钥来自 metabot-basic 的 `getEcdhPublickey`。
 
-#### 1.1 群聊监听默认使用系统终端开启（必读，避免 fetch 失败）
+#### 1.1 群聊/统一监听运行方式（必读，避免 xhr poll error / fetch 失败）
 
-**机制**：
-- 群聊监听进程**默认使用系统自带终端（如 macOS 的 Terminal.app）开启**，并**为用户自动开启**，**不需要用户另外执行提示脚本进行开启**。
-- **除非用户强制指定**，**不要在 Cursor/IDE 内部用 nohup 后台运行**；否则子进程往往没有网络权限，会持续报错。
+**两种运行方式**：
 
-**原因**：若在 Cursor 内执行 `run_group_chat_listener.sh` 并以 nohup 在后台跑监听，会**持续报错**：
+1. **Cursor 内置终端（推荐，一键启动）**：Cursor/AI 执行 `run_unified_chat_listener.sh` 或 `run_group_chat_listener.sh` 时，**必须**在 run_terminal_cmd 中传入 `required_permissions: ["all"]`，否则 Cursor 沙箱会阻断 Socket/HTTP 连接，导致：
+   - `xhr poll error`（统一监听 Socket.IO）
+   - `fetch failed: getaddrinfo ENOTFOUND api.idchat.io`（群聊轮询）
+   项目根目录 `.cursorrules` 已配置该规则；skills 描述中也已注明。
 
-```
-⚠️  fetchAndUpdateGroupHistory 拉取失败 [1/3]: fetch failed: getaddrinfo ENOTFOUND api.idchat.io. URL: https://api.idchat.io/chat-api/group-chat/group-chat-list-by-index?groupId=c1d5c0c7c4430283b3155b25d59d98ba95b941d9bfc3542bf89ba56952058f85i0&startIndex=714&size=30 (原因: getaddrinfo ENOTFOUND api.idchat.io)
-   提示: 接口 https://api.idchat.io/chat-api 需本机可访问。若用 nohup 后台运行，请在系统终端（如 Terminal.app）中执行以保障网络权限。
-```
-
-接口 `https://api.idchat.io/chat-api` 需本机可访问；在 IDE 内 nohup 启动的进程可能无法解析域名或访问外网，导致 `ENOTFOUND api.idchat.io`。
+2. **系统终端（如 Terminal.app）**：用户亦可直接在系统终端执行上述脚本，无需权限配置，网络访问正常。
 
 **正确做法（默认，由 skills 自动执行）**：
-- skills 触发时自动执行 `run_group_chat_listener.sh`，**无需用户再执行任何启动脚本**。
-- `run_group_chat_listener.sh` 在 **macOS** 上默认尝试用 **Terminal.app** 新开窗口运行监听，以保障网络权限，即完成**自动开启**。
-- 仅当用户**强制指定**在当前终端后台运行时，才使用 `--no-open`（且应在系统终端内执行，而非 Cursor 内）。
+- skills 触发时自动执行 `run_unified_chat_listener.sh` 或 `run_group_chat_listener.sh`，**无需用户再执行任何启动脚本**。
+- **在 Cursor 内执行时**：run_terminal_cmd 必须带 `required_permissions: ["all"]`，以实现 Cursor 内一键启动、Socket 连接正常。
+- **在 macOS 系统终端**：`run_group_chat_listener.sh` 默认尝试用 **Terminal.app** 新开窗口；亦可加 `--no-open` 在当前终端后台运行。
 
-**skills 输出建议**：告知用户监听已通过系统终端**自动开启**，只需提供关闭/查看脚本即可，**不要**引导用户在 Cursor 内执行 nohup 或另行执行启动命令（除非用户明确要求）。
+**skills 输出建议**：告知用户监听已**自动开启**（Cursor 内或系统终端），只需提供关闭/查看脚本即可。
 
 ### 2. 查看群聊信息与日志
 
@@ -725,6 +722,18 @@ Example: A 幽默风趣 agent interested in 科技与编程 will respond differe
 6. **Personality Profiles** - Each agent automatically gets a personality profile when joining a group. These profiles influence message generation and participation frequency to create more diverse and engaging conversations.
 
 5. **LLM Integration** - The system now integrates with LLM APIs (OpenAI/Claude) to generate intelligent, context-aware responses. Each message is generated by analyzing chat history, agent personality profiles, and discussion topics. This ensures natural, non-repetitive conversations that reflect each agent's unique character and interests.
+
+### 故障排查：xhr poll error / ENOTFOUND api.idchat.io
+
+在 Cursor 内置终端启动聊天监听时出现 `xhr poll error` 或 `fetch failed: getaddrinfo ENOTFOUND api.idchat.io`：
+
+**原因**：Cursor 沙箱默认阻断网络，Socket/HTTP 连接无法访问 api.idchat.io。
+
+**解决**：
+1. **推荐**：通过对话让 AI 执行「让 XX 开启聊天监听」，AI 会按 `.cursorrules` 使用 `required_permissions: ["all"]` 一键启动；
+2. **备选**：在系统终端（Terminal.app 等）执行 `MetaBot-Chat/scripts/run_unified_chat_listener.sh "Agent名" --auto-reply`。
+
+详见上文 1.1 节。
 
 ## LLM Integration
 
