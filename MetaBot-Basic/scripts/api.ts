@@ -519,3 +519,9 @@ export const getUserInfoByAddressByMs = async (address: string): Promise<UserInf
     return res
   })
 }
+
+export const getUserInfoByMetaidByMs= async (metaid: string): Promise<UserInfo> => {
+  return metafsApi.get(`/v1/users/metaid/${metaid}`).then(res => {
+    return res
+  })
+}

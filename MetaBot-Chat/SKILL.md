@@ -1,6 +1,6 @@
 ---
 name: metabot-chat
-description: Manage group chat messages, send messages, and join groups on the MetaID network. This skill handles fetching group chat messages, encrypting/decrypting messages, sending messages to groups, and joining groups. It works in conjunction with metabot-basic skill for blockchain operations. Use when users want to: (1) Fetch group chat messages from a specified group, (2) Send messages to a group chat, (3) Join a group chat, (4) Have MetaBot Agents participate in group discussions based on topics, (5) 开启群聊/监听群聊/让 XX Agent 监听群聊信息 - Cursor/AI 必须直接帮用户执行启动脚本（一键即启动），除非用户明确要求手动启动，否则禁止仅输出命令让用户自行执行, (6) 对监听群聊内容进行具体 XX 场景的回复 - Cursor/AI 必须自动执行对应场景脚本. Requires Node.js >= 18.x.x, TypeScript, and metabot-basic skill as a dependency. Dependencies: crypto-js, meta-contract.
+description: Manage group chat messages, send messages, and join groups on the MetaID network. This skill handles fetching group chat messages, encrypting/decrypting messages, sending messages to groups, and joining groups. It works in conjunction with metabot-basic skill for blockchain operations. Use when users want to: (1) Fetch group chat messages from a specified group, (2) Send messages to a group chat, (3) Join a group chat, (4) Have MetaBot Agents participate in group discussions based on topics, (5) 开启群聊/监听群聊/让 XX Agent 监听群聊信息 - Cursor/AI 必须直接帮用户执行启动脚本（一键即启动），除非用户明确要求手动启动，否则禁止仅输出命令让用户自行执行, (6) 对监听群聊内容进行具体 XX 场景的回复 - Cursor/AI 必须自动执行对应场景脚本, (7) 开启统一聊天监听（群聊+私聊）或私聊回复. Requires Node.js >= 18.x.x, TypeScript, and metabot-basic skill as a dependency. Dependencies: crypto-js, meta-contract, socket.io-client.
 ---
 
 # metabot-chat
@@ -38,10 +38,11 @@ Run `scripts/check_environment.sh` to verify the environment.
 This skill requires the following npm packages:
 - `crypto-js@^4.2.0` - For message encryption/decryption
 - `meta-contract@^0.4.16` - For blockchain operations (via metabot-basic)
+- `socket.io-client@^4.7.2` - For unified chat listener (WebSocket to idchat.io)
 
 Install dependencies with:
 ```bash
-npm install crypto-js meta-contract
+npm install crypto-js meta-contract socket.io-client
 ```
 
 ## 配置与敏感文件
@@ -55,6 +56,8 @@ npm install crypto-js meta-contract
 - `config.json`
 - `userInfo.json`
 - `group-list-history.log`（群聊历史记录）
+- `chat-config.json`（统一聊天配置：群聊/私聊 lastTimestamp、lastIndex 等，由统一监听自动维护）
+- `chat-history/`（统一聊天日志目录：群聊为 `groupId.slice(0,16).log`，私聊为 `sharedSecret.slice(0,20).log`）
 
 若旧位置（metabot-chat/）存在上述文件，首次运行时会自动迁移到根目录。
 
@@ -295,6 +298,28 @@ The script accepts prompts in the following format:
 - `run_xiaocheng_listener.sh` - 小橙专用：`run_group_chat_listener.sh 小橙` 的便捷封装
 - `stop_group_chat_listener.sh` - 关闭群聊监听进程
 - `tail_group_chat.sh` - 打印群聊信息（name + 明文 content + 时间）
+
+#### 1.0 统一聊天监听（群聊 + 私聊，Socket 推送）
+
+除上述轮询式群聊监听外，本 skill 支持**统一聊天监听**：通过 Socket.IO 连接 idchat.io，同时接收**群聊**与**私聊**推送，消息写入根目录 `chat-history/` 下对应 `.log` 文件，配置写入 `chat-config.json`。
+
+**脚本与用法**：
+- `run_unified_chat_listener.sh [Agent名称]` - 启动统一监听（需指定一个 Agent 的账户，用于 globalMetaId 建立连接）
+- `stop_unified_chat_listener.sh` - 关闭统一监听进程
+- `tail_chat_history.sh` - 查看 chat-history 下所有会话最近消息（用户名 | 内容 | 时间 | 来源）；加 `-f` 持续刷新
+- `private_reply.ts` - 私聊智能回复：`AGENT_NAME=xxx OTHER_GLOBAL_META_ID=xxx npx ts-node scripts/private_reply.ts`
+
+**自动回复**：启动时设置 `AUTO_REPLY=1` 可对新收到的群聊/私聊自动回复；`REPLY_MAX_COUNT=20`（默认 20）为最多自动回复次数，达到后提示用户可继续输入指令设置。
+
+**chat-config.json 结构**（根目录，自动创建/更新）：
+```json
+{
+  "group": [{ "groupId": "", "lastTimestamp": 0, "lastIndex": 0 }],
+  "private": [{ "sharedSecret": "", "metaId": "", "otherGlobalMetaId": "", "otherMetaId": "", "lastTimestamp": 0, "lastIndex": 0 }]
+}
+```
+
+**依赖**：`socket.io-client`；私聊加解密使用 `crypto.ts` 的 `ecdhEncrypt`/`ecdhDecrypt`，协商密钥来自 metabot-basic 的 `getEcdhPublickey`。
 
 #### 1.1 群聊监听默认使用系统终端开启（必读，避免 fetch 失败）
 

@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "crypto-js": "^4.2.0",
-    "meta-contract": "^0.4.16"
+    "meta-contract": "^0.4.16",
+    "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
